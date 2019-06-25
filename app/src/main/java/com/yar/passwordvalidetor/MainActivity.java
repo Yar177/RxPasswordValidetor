@@ -3,18 +3,13 @@ package com.yar.passwordvalidetor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jakewharton.rxbinding2.widget.RxTextView;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +24,12 @@ public class MainActivity extends AppCompatActivity {
     Button cancel;
 
     TextView listView;
+
+    boolean meetsReqs = false;
+    boolean match = false;
+
+    int reqMet = 0;
+
 
 
 
@@ -77,27 +78,28 @@ public class MainActivity extends AppCompatActivity {
 
 
         RxTextView.textChanges(createPassword)
-                .doOnNext(text -> this.clearSearchResults())
-               // .filter(text -> text.length() >= 3)
+                .doOnNext(text -> this.clearSearchResults(listView))
+                .filter(text -> text.length() >= 1)
                // .debounce(500, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateSearchResults);
+                .subscribe(this::validatePassword);
+
+
+//        RxTextView.textChanges(confirmPassword)
 
     }
 
-    private void clearSearchResults() {
-
-        listView.setText("");
-
-        listView.setVisibility(View.INVISIBLE);
-
-
+    private void clearSearchResults(TextView view) {
+        //view.setText("");
+        listView.setVisibility(View.GONE);
     }
 
 
-    private void updateSearchResults(CharSequence text){
+    private void validatePassword(CharSequence text){
         listView.setVisibility(View.VISIBLE);
         StringBuilder list = new StringBuilder();
+
+
 
         Matcher rangeMatcher = range.matcher(text);
         Matcher numberMatcher = numberMatch.matcher(text);
@@ -107,27 +109,34 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (!rangeMatcher.matches()){
-            list.append("Minimum of 8 characters long and contain at least 2 of the following: \n");
+            list.append("Minimum of 8 characters long ");
         }
+        if (reqMet < 2){
+            list.append("and contain at least 2 of the following:");
+        }
+
         if (!numberMatcher.matches()){
-            list.append("Use a number (0-9)\n");
+            list.append("\nUse a number (0-9)");
+
+        }else {
+            reqMet++;
         }
         if (!specialMatcher.matches()){
-            list.append("Use a special characters (@#$%)\n");
+            list.append("\nUse a special characters (@#$%)");
+        }else {
+            reqMet++;
         }
         if (!upperMatcher.matches()){
-            list.append("Use an uppercase character (A-Z)\n");
+            list.append("\nUse an uppercase character (A-Z)");
+        }else {
+            reqMet++;
         }
         if (!lowerMatcher.matches()){
-            list.append("Use an uppercase character (A-Z)\n");
+            list.append("\nUse an uppercase character (A-Z)");
+        }else {
+            reqMet++;
         }
 
-
-
-
-//        for (int i=0; i<4; i++){
-//            list.append("" + text + Math.random() + "\n");
-//        }
 
         listView.setText("");
         listView.setText(list);
