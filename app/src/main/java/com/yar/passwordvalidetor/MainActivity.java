@@ -7,7 +7,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jakewharton.rxbinding2.widget.RxTextView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
 
     Button submit;
     Button cancel;
+
+    TextView listView;
+
+
 
     ArrayAdapter<String> arrayAdapter;
 
@@ -27,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        ListView listView = (ListView) findViewById()
+        listView = (TextView) findViewById(R.id.search_results);
+
 
 
         createPassword = (EditText) findViewById(R.id.update_password_create_input_txt);
@@ -53,6 +67,41 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        RxTextView.textChanges(createPassword)
+                .doOnNext(text -> this.clearSearchResults())
+                .filter(text -> text.length() >= 3)
+                .debounce(500, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateSearchResults);
 
     }
+
+    private void clearSearchResults() {
+
+        listView.setText("");
+
+        listView.setVisibility(View.INVISIBLE);
+
+
+    }
+
+
+    private void updateSearchResults(CharSequence text){
+        listView.setVisibility(View.VISIBLE);
+
+
+        StringBuilder list = new StringBuilder();
+
+        for (int i=0; i<4; i++){
+            list.append("" + text + Math.random() + "\n");
+        }
+
+        listView.setText("");
+        listView.setText(list);
+
+
+    }
+
+
+
 }
