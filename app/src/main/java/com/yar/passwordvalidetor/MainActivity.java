@@ -15,6 +15,8 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
@@ -30,7 +32,15 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    ArrayAdapter<String> arrayAdapter;
+
+
+
+    Pattern range = Pattern.compile("^[a-zA-Z0-9!@#$%^&*()+]{8,50}$");
+    Pattern numberMatch = Pattern.compile(".*[0-9].*");
+    Pattern specialMatch = Pattern.compile("^(?=[\\w!@#$%^&*()+])(?:.*[!@#$%^&*()+]+.*)$");
+    Pattern upperMatch = Pattern.compile(".*[A-Z].*");
+    Pattern lowerMatch = Pattern.compile(".*[a-z].*");
+
 
 
     @Override
@@ -39,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         listView = (TextView) findViewById(R.id.search_results);
 
 
@@ -69,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
         RxTextView.textChanges(createPassword)
                 .doOnNext(text -> this.clearSearchResults())
-                .filter(text -> text.length() >= 3)
-                .debounce(500, TimeUnit.MILLISECONDS)
+               // .filter(text -> text.length() >= 3)
+               // .debounce(500, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateSearchResults);
 
@@ -88,13 +97,37 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateSearchResults(CharSequence text){
         listView.setVisibility(View.VISIBLE);
-
-
         StringBuilder list = new StringBuilder();
 
-        for (int i=0; i<4; i++){
-            list.append("" + text + Math.random() + "\n");
+        Matcher rangeMatcher = range.matcher(text);
+        Matcher numberMatcher = numberMatch.matcher(text);
+        Matcher specialMatcher = specialMatch.matcher(text);
+        Matcher upperMatcher = upperMatch.matcher(text);
+        Matcher lowerMatcher = lowerMatch.matcher(text);
+
+
+        if (!rangeMatcher.matches()){
+            list.append("Minimum of 8 characters long and contain at least 2 of the following: \n");
         }
+        if (!numberMatcher.matches()){
+            list.append("Use a number (0-9)\n");
+        }
+        if (!specialMatcher.matches()){
+            list.append("Use a special characters (@#$%)\n");
+        }
+        if (!upperMatcher.matches()){
+            list.append("Use an uppercase character (A-Z)\n");
+        }
+        if (!lowerMatcher.matches()){
+            list.append("Use an uppercase character (A-Z)\n");
+        }
+
+
+
+
+//        for (int i=0; i<4; i++){
+//            list.append("" + text + Math.random() + "\n");
+//        }
 
         listView.setText("");
         listView.setText(list);
