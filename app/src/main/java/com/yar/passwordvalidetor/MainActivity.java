@@ -57,6 +57,15 @@ public class MainActivity extends AppCompatActivity {
         createPassword = (EditText) findViewById(R.id.update_password_create_input_txt);
         confirmPassword = (EditText) findViewById(R.id.update_password_confirm_input_txt);
 
+        createPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus){
+                    clearSearchResults(listView);
+                }
+            }
+        });
+
         submit = (Button) findViewById(R.id.password_update_submit_btn);
         cancel = (Button) findViewById(R.id.password_update_cancel_btn);
 
@@ -86,12 +95,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        RxTextView.textChanges(confirmPassword)
-
+//
     }
 
     private void clearSearchResults(TextView view) {
-        //view.setText("");
+        view.setText("");
         listView.setVisibility(View.GONE);
+
     }
 
 
